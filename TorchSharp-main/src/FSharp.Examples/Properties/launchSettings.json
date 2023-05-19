@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "FSharp Examples": {
-      "commandName": "Project",
-      "commandLineArgs": "mnist",
-      "nativeDebugging": true
-    }
-  }
-}

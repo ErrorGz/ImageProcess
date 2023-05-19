@@ -1,3 +1,0 @@
-**/*.nupkg
-**/TorchSharp.dll
-**/LibTorchSharp.dll

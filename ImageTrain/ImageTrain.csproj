@@ -29,16 +29,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="linq2db" Version="5.1.1" />
-    <PackageReference Include="linq2db.MySql" Version="5.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="NumSharp" Version="0.30.0" />
     <PackageReference Include="OpenCvSharp4.Extensions" Version="4.6.0.20220608" />
     <PackageReference Include="OpenCvSharp4.Windows" Version="4.6.0.20220608" />
-    <PackageReference Include="SharpYaml" Version="2.1.0" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
-    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="6.0.0" />
-    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
     <PackageReference Include="TorchAudio" Version="0.99.6" />
     <PackageReference Include="TorchSharp" Version="0.99.6" />
     <PackageReference Include="TorchSharp-cuda-windows" Version="0.99.6" />
@@ -50,22 +44,10 @@
     <None Update="CIFAR10\cifar-100-binary.tar.gz">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="DataModels\MyDatabase.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>MyDatabase.generated.cs</LastGenOutput>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="DataModels\MyDatabase.generated.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>MyDatabase.tt</DependentUpon>
-    </Compile>
   </ItemGroup>
 
   <ItemGroup>
