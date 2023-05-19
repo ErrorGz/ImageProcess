@@ -13,7 +13,7 @@ namespace ImageTrain
         {
 
             var tensorboard = torch.utils.tensorboard.SummaryWriter();
-          
+
             YAMLdatabase db = new YAMLdatabase(@"DataSet\animals.v2-release.yolov5pytorch");
             db.Save("config.yaml");
             //YAMLdatabase db2 = new YAMLdatabase();
@@ -21,10 +21,12 @@ namespace ImageTrain
 
 
             var device = torch.cuda.is_available() ? torch.CUDA : torch.CPU;
-            var model = torchvision.models.resnet34(num_classes: db.Labels.Count, device: device);
+            var model = torchvision.models.resnet50(num_classes: db.Labels.Count, device: device);
             //torch.nn.LSTM()
             if (File.Exists("best.pt"))
+            {
                 model.load("best.pt");
+            }
 
             using YOLOv5_Dataset train_data = new YOLOv5_Dataset(db.Labels, db.TrainImage);
             using YOLOv5_Dataset test_data = new YOLOv5_Dataset(db.Labels, db.ValidImage);
@@ -133,13 +135,13 @@ namespace ImageTrain
                     var pb = 推理张量1维最大值.data<long>().ToList();
                     var tb = 目标张量1维最大值.data<long>().ToList();
                     var pt_list = pb.Zip(tb, (p, t) => (p, t)).Select(o => new string($"[{o.p},{o.t}]"));
-                    var pt_msg=string.Join(",", pt_list);
-                   
-                    var batch_correct= 推理张量1维最大值.eq(目标张量1维最大值).sum().ToInt64();
+                    var pt_msg = string.Join(",", pt_list);
+
+                    var batch_correct = 推理张量1维最大值.eq(目标张量1维最大值).sum().ToInt64();
                     correct += batch_correct;
                     var batch_loss = output.ToSingle();
                     totalLoss += batch_loss;
-                    
+
                     StaticLib.Log($"[{mode}] batch_data:{pt_msg}\t batch_loss:{batch_loss}/{batch_count}\t batch_correct:{batch_correct}/{batch_count}");
 
                     d.DisposeEverything();

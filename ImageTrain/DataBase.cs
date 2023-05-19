@@ -97,8 +97,10 @@ namespace ImageTrain
                 {
                     var filename = Path.GetFileNameWithoutExtension(file);
                     var labelfile = Path.Combine(trainlabelpath, filename + ".txt");
+                    
                     if (File.Exists(labelfile))
                     {
+                        labelfile = new FileInfo(labelfile).FullName;
                         var label = ReadLabelFile(labelfile);
 
                         ImageData image = new ImageData() { ImageFile = file, bbox = label };
@@ -116,6 +118,7 @@ namespace ImageTrain
                     var labelfile = Path.Combine(validlabelpath, filename + ".txt");
                     if (File.Exists(labelfile))
                     {
+                        labelfile = new FileInfo(labelfile).FullName;
                         var label = ReadLabelFile(labelfile);
 
                         ImageData image = new ImageData() { ImageFile = file, bbox = label };
