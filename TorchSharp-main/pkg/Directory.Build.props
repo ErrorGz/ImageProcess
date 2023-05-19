@@ -1,0 +1,84 @@
+<Project>
+  <Import Project="..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <_IsAuxPackage Condition="'$(MSBuildProjectName.IndexOf(`-part`))' != '-1'">true</_IsAuxPackage>
+    <_IsLibTorchPackage Condition="'$(MSBuildProjectName.IndexOf(`libtorch-`))' != '-1'">true</_IsLibTorchPackage>
+  </PropertyGroup>
+
+  <!-- libtorch main parts -->
+  <PropertyGroup Condition="'$(_IsAuxPackage)' != 'true' AND '$(_IsLibTorchPackage)' == 'true'">
+    <Authors>PyTorch contributors;TorchSharp contributors</Authors>
+    <PackageLicenseFile>LICENSE-LIBTORCH.txt</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/dotnet/TorchSharp</PackageProjectUrl>
+    <PackageTags>TorchSharp LibTorch PyTorch Torch DL DNN Deep ML Machine Learning Neural Network</PackageTags>
+    <Copyright>Copyright PyTorch contributors</Copyright>
+    <Owners>.NET Foundation and Contributors</Owners>
+    <TargetFramework Condition="'$(SkipSettingTargetFrameworkInGlobalProps)' != 'true'">netstandard2.0</TargetFramework>
+    <PackageDescription>TorchSharp makes PyTorch available for .NET users. $(MSBuildProjectName) contains components of the PyTorch LibTorch library version $(LibTorchVersion) redistributed as a NuGet package with added support for TorchSharp.</PackageDescription>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <!-- libtorch aux parts -->
+  <PropertyGroup Condition="'$(_IsAuxPackage)' == 'true'">
+    <Authors>(see main package)</Authors>
+    <PackageTags></PackageTags>
+    <Copyright>(see main package)</Copyright>
+    <Owners>The .NET Foundation and Contributors</Owners>
+    <PackageLicenseFile>LICENSE-LIBTORCH.txt</PackageLicenseFile>
+    <PackageDescription>(see main package)</PackageDescription>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <!-- TorchSharp, TorchSharp=cpu, TorchSharp-cuda-linux, TorchSharp-cuda=windows -->
+  <PropertyGroup Condition="'$(_IsLibTorchPackage)' != 'true'">
+    <Authors>TorchSharp contributors</Authors>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/dotnet/TorchSharp</PackageProjectUrl>
+    <PackageTags>TorchSharp LibTorch PyTorch Torch DL DNN Deep ML Machine Learning Neural Network</PackageTags>
+    <Copyright>Copyright .NET Foundation and Contributors</Copyright>
+    <Owners>.NET Foundation and Contributors</Owners>
+    <TargetFramework Condition="'$(SkipSettingTargetFrameworkInGlobalProps)' != 'true'">netstandard2.0</TargetFramework>
+    <PackageDescription>TorchSharp makes PyTorch available for .NET users.</PackageDescription>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoBuild>true</NoBuild>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <IsSymbolsPackage Condition="$(MSBuildProjectName.Contains('.symbols'))">true</IsSymbolsPackage>
+    <PackageIdFolderName>$(MSBuildProjectName.Replace('.symbols', ''))</PackageIdFolderName>
+
+    <!--
+    Our .nupkgproj files have conflicting names with src projects, which puts their intermediate
+    output in the same folder. Override the intermediate output to
+    make it unique for the .nupkgprojs.
+    -->
+    <IntermediateOutputPath>$(IntermediateOutputRootPath)$(MSBuildProjectName).NupkgProj\</IntermediateOutputPath>
+    <BaseIntermediateOutputPath>$(IntermediateOutputPath)</BaseIntermediateOutputPath>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <Content Include="$(PackagePreparationPath)$(PackageIdFolderName)\lib\**\*" Pack="true" PackagePath="lib" />
+    <Content Include="$(PackagePreparationPath)$(PackageIdFolderName)\analyzers\**\*" Pack="true" PackagePath="analyzers" />
+    <Content Include="$(PackagePreparationPath)$(PackageIdFolderName)\runtimes\**\*" Pack="true" PackagePath="runtimes" />
+    <Content Include="$(PackagePreparationPath)$(PackageIdFolderName)\fragments\**\*" Pack="true" PackagePath="fragments" />
+    <Content Include="$(PackagePreparationPath)$(PackageIdFolderName)\tools\**\*" Pack="true" PackagePath="tools" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsSymbolsPackage)' != 'true'">
+    <Content Remove="$(PackagePreparationPath)$(PackageIdFolderName)\**\*.pdb" />
+    <Content Remove="$(PackagePreparationPath)$(PackageIdFolderName)\**\*.dwarf" />
+    <Content Remove="$(PackagePreparationPath)$(PackageIdFolderName)\**\*.dbg" />
+  </ItemGroup>
+
+  <!-- Work around https://github.com/NuGet/Home/issues/6091 -->
+  <ItemDefinitionGroup>
+    <PackageReference>
+      <PrivateAssets>None</PrivateAssets>
+    </PackageReference>
+  </ItemDefinitionGroup>
+
+</Project>

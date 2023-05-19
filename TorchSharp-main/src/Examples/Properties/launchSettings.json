@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Examples": {
+      "commandName": "Project",
+      "commandLineArgs": "mnist",
+      "nativeDebugging": true
+    }
+  }
+}

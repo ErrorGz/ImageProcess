@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CSharpExamples": {
+      "commandName": "Project",
+      "commandLineArgs": "-e 10 vgg11"
+    }
+  }
+}

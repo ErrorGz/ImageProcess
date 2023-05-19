@@ -1,0 +1,5 @@
+train: ../train/images
+val: ../valid/images
+
+nc: 10
+names: ['cat', 'chicken', 'cow', 'dog', 'fox', 'goat', 'horse', 'person', 'racoon', 'skunk']

@@ -1,0 +1,75 @@
+<Project>
+  <PropertyGroup>
+    <!-- versioning.targets will import this file, so don't import it again -->
+    <DisableImportVersioningProps>true</DisableImportVersioningProps>
+    <!-- Use this flag to ensure native assets take stable version -->
+    <UseStableVersionForNativeAssets>true</UseStableVersionForNativeAssets>
+
+    <!-- Do we split unix symbols into separate files -->
+    <StripNativeSymbols Condition="'$(Configuration)' == ''">True</StripNativeSymbols>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <!-- Target that builds all the native binaries in the Native folder -->
+  <Target Name="Build" DependsOnTargets="BuildNativeUnix;BuildNativeWindows;PreparePackageAssets" />
+
+  <PropertyGroup>
+    <PlaceholderFile>$(PkgDir)_._</PlaceholderFile>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+    <GenerateVersionSourceFile>true</GenerateVersionSourceFile>
+    <NativeVersionSourceFile>$(RootIntermediateOutputPath)version.c</NativeVersionSourceFile>
+  </PropertyGroup>
+ 
+  <PropertyGroup  Condition="'$(OS)' == 'Windows_NT'">
+    <GenerateNativeVersionInfo>true</GenerateNativeVersionInfo>
+  </PropertyGroup>
+
+  <Target Name="BuildNativeUnix"
+          Condition="'$(OS)' != 'Windows_NT'">
+
+    <PropertyGroup>
+      
+      <StripArgs Condition="'$(StripNativeSymbols)' == 'True'">--stripsymbols</StripArgs>
+      <BuildArgs>--configuration $(NativeConfiguration) --arch $(TargetArchitecture) $(StripArgs) --libtorchpath $(LibTorchCmakePath)</BuildArgs>
+    </PropertyGroup>
+
+    <Message Text="$(MSBuildProjectDirectory)/build.sh $(BuildArgs)" Importance="High"/>
+    <Exec Command="&quot;$(MSBuildProjectDirectory)/build.sh&quot; $(BuildArgs)" />
+
+  </Target>
+
+  <Target Name="BuildNativeWindows"
+          Condition="'$(OS)' == 'Windows_NT'">
+          
+    <PropertyGroup>
+     <BuildArgs>$(NativeConfiguration) $(TargetArchitecture) --libtorchpath $(LibTorchCmakePath)</BuildArgs>
+    </PropertyGroup>
+
+    <!-- Run script that invokes Cmake to create VS files, and then calls msbuild to compile them -->
+    <Message Text="$(MSBuildProjectDirectory)\build.cmd $(BuildArgs)" Importance="High"/>
+    <Exec Command="&quot;$(MSBuildProjectDirectory)\build.cmd&quot; $(BuildArgs)" />
+
+  </Target>
+
+  <Target Name="PreparePackageAssets">
+  
+    <ItemGroup>
+      <NativePackageAsset Include="$(NativeOutputPath)$(NativeLibPrefix)LibTorchSharp$(NativeLibExtension)"
+                          RelativePath="TorchSharp\runtimes\$(PackageRid)\native" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <NativePackageAsset Condition="('$(OS)' == 'Windows_NT' OR '$(StripNativeSymbols)' == 'True')
+                                     AND '%(NativePackageAsset.Identity)' != '$(PlaceholderFile)'"
+                          Include="@(NativePackageAsset->'%(RootDir)%(Directory)%(Filename)$(NativeLibSymbolExtension)')" />
+    </ItemGroup>
+    
+    <Copy SourceFiles="@(NativePackageAsset)"
+          DestinationFolder="$(PackagePreparationPath)%(NativePackageAsset.RelativePath)"  />
+
+  </Target>
+
+</Project>

@@ -1,0 +1,136 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- see https://pytorch.org/get-started/locally/ for download links -->
+    <!-- For example Linux, LibTorch 1.9.0 https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-1.9.0%2Bcpu.zip -->
+    <!-- note the very odd characters %2Bcpu in the LibTorch download name. The % is encoded via %25 -->
+    <LocalBaseName>$(LibTorchCpuLocalBase)</LocalBaseName>
+    <ArchiveBaseName>$(LibTorchCpuArchiveBase)</ArchiveBaseName>
+    <ArchiveExtension>.zip</ArchiveExtension>
+    <ArchiveUrl>https://download.pytorch.org/libtorch/cpu/$(ArchiveBaseName)$(ArchiveExtension)</ArchiveUrl>
+    <DownloadedArchiveFolder>$(MassiveDownloadRoot)$(MSBuildProjectName)\</DownloadedArchiveFolder>
+    <DownloadedArchiveFileName>$(ArchiveBaseName)$(ArchiveExtension)</DownloadedArchiveFileName>
+    <DownloadedArchive>$(DownloadedArchiveFolder)$(DownloadedArchiveFileName)</DownloadedArchive>
+    <ArchiveShaFile>$(IntermediateOutputPath)$(ArchiveBaseName)$(ArchiveExtension).sha</ArchiveShaFile>
+    <ExtractDirectory>$(IntermediateOutputPath)$(LocalBaseName)</ExtractDirectory>
+    <ExtractSemaphore>$(ExtractDirectory)\.extracted</ExtractSemaphore>
+    <LocalShaFile>$(MSBuildProjectDirectory)\$(ArchiveBaseName)$(ArchiveExtension).sha</LocalShaFile>
+    <LicenseUrl>https://raw.githubusercontent.com/pytorch/pytorch/master/LICENSE</LicenseUrl>
+    <DownloadedLicenseFolder>$(IntermediateOutputPath)</DownloadedLicenseFolder>
+    <DownloadedLicenseFileName>LICENSE-LIBTORCH</DownloadedLicenseFileName>
+    <DownloadedLicenseFile>$(DownloadedLicenseFolder)$(DownloadedLicenseFileName)</DownloadedLicenseFile>
+    <MainPackageFolder>$(PackagePreparationPath)$(MSBuildProjectName)-$(TargetRuntimeID)</MainPackageFolder>
+    <CopyToPackageSemaphore>$(MainPackageFolder)\.copied.SkipTests.$(SkipTests).IncludeLibTorchCpuPackages.$(IncludeLibTorchCpuPackages)</CopyToPackageSemaphore>
+  </PropertyGroup>
+  
+  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
+    <File Include="libtorch\lib\asmjit.dll" />
+    <File Include="libtorch\lib\c10.dll" />
+    <File Include="libtorch\lib\fbgemm.dll" />
+    <File Include="libtorch\lib\libiomp5md.dll" />
+    <File Include="libtorch\lib\libiompstubs5md.dll" />
+    <File Include="libtorch\lib\torch.dll" />
+    <File Include="libtorch\lib\torch_cpu.dll" />
+    <File Include="libtorch\lib\torch_global_deps.dll" />
+    <File Include="libtorch\lib\uv.dll" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetOS)' == 'mac'">
+    <File Include="libtorch\lib\libbackend_with_compiler.dylib" />
+    <File Include="libtorch\lib\libc10.dylib" />
+    <File Include="libtorch\lib\libfbjni.dylib" />
+    <File Include="libtorch\lib\libiomp5.dylib" />
+    <File Include="libtorch\lib\libjitbackend_test.dylib" />
+    <File Include="libtorch\lib\libpytorch_jni.dylib" />
+    <File Include="libtorch\lib\libshm.dylib" />
+    <File Include="libtorch\lib\libtorch.dylib" />
+    <File Include="libtorch\lib\libtorch_cpu.dylib" />
+    <File Include="libtorch\lib\libtorch_global_deps.dylib" />
+    <File Include="libtorch\lib\libtorch_python.dylib" />
+    <File Include="libtorch\lib\libtorchbind_test.dylib" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetOS)' == 'linux'">
+    <File Include="libtorch\lib\libbackend_with_compiler.so" />
+    <File Include="libtorch\lib\libc10.so" />
+    <File Include="libtorch\lib\libfbjni.so" />
+    <File Include="libtorch\lib\libjitbackend_test.so" />
+    <File Include="libtorch\lib\libnnapi_backend.so" />
+    <File Include="libtorch\lib\libpytorch_jni.so" />
+    <File Include="libtorch\lib\libshm.so" />
+    <File Include="libtorch\lib\libtorch.so" />
+    <File Include="libtorch\lib\libtorch_cpu.so" />
+    <File Include="libtorch\lib\libtorch_global_deps.so" />
+    <File Include="libtorch\lib\libtorch_python.so" />
+    <File Include="libtorch\lib\libtorchbind_test.so" />
+    <File Include="libtorch\lib\libgomp-a34b3233.so.1" />
+  </ItemGroup>
+
+  <Target Name="DownloadArchive" Inputs="..\..\..\LICENSE" Outputs="$(DownloadedArchive);$(DownloadedLicenseFile)">
+    <MakeDir Directories="$(DownloadedArchiveFolder)" />
+    <MakeDir Directories="$(DownloadedLicenseFolder)" />
+    <DownloadFile  SourceUrl="$(ArchiveUrl)" DestinationFolder="$(DownloadedArchiveFolder)" DestinationFileName="$(DownloadedArchiveFileName)" Condition="!Exists('$(DownloadedArchive)')" />
+    <DownloadFile  SourceUrl="$(LicenseUrl)" DestinationFolder="$(DownloadedLicenseFolder)" DestinationFileName="$(DownloadedLicenseFileName)" Condition="!Exists('$(DownloadedLicense)')" />
+  </Target>
+
+  <!-- Validate and extract Archive for Libtorch -->
+  <Target Name="ValidateAndExtractArchives" DependsOnTargets="DownloadArchive" Inputs="$(DownloadedArchive)" Outputs="$(ExtractSemaphore)">
+    <Message Importance="High" Text="GetFileHash $(DownloadedArchive)" />
+    <GetFileHash  Files="$(DownloadedArchive)">  <Output TaskParameter="Hash" PropertyName="DownloadedArchiveHash" /> </GetFileHash>
+    <WriteLinesToFile File="$(ArchiveShaFile)" Lines="$(DownloadedArchiveHash)" Overwrite="true" />
+
+    <!-- If specified we'll update the checked in SHAs with the downloaded ones. -->
+    <Copy Condition="'$(UpdateSHA)' == 'true'" SourceFiles="$(ArchiveShaFile)" DestinationFiles="$(LocalShaFile)" />
+
+    <Error Condition="!Exists('$(LocalShaFile)')" Text="SHA file '$(LocalShaFile)' does not exist.  Build with /p:UpdateSHA=true to save it." />
+
+    <!-- Read in the SHAs as metadata on the archive items -->
+    <ItemGroup>
+      <Archive>
+        <LocalSha>$([System.IO.File]::ReadAllText('$(LocalShaFile)'))</LocalSha>
+        <DownloadSha>$([System.IO.File]::ReadAllText('$(ArchiveShaFile)'))</DownloadSha>
+      </Archive>
+    </ItemGroup>
+
+    <!-- Validate that the downloaded SHAs match the expected checked in SHAs -->
+    <Error Condition="'%(Archive.LocalSha)' != '%(Archive.DownloadSha)'" Text="Downloaded file '$(DownloadedArchive)' has unexpected SHA.%0A  expected: %(Archive.LocalSha)%0A  actual: %(Archive.DownloadSha)%0ABuild with /p:UpdateSHA=true if you intentionally changed the URL and wish to update the SHAs, otherwise this could indicate an incomplete download or intercerpted URL and should be examined." />
+
+    <!-- The archives are valid, lets extract them, ensuring an empty directory -->
+    <RemoveDir Directories="$(ExtractDirectory)" />
+    <MakeDir Directories="$(ExtractDirectory)" />
+    <Message Importance="High" Text="Unzip $(DownloadedArchive) --> $(ExtractDirectory)" />
+    <Unzip Condition="'$(ArchiveExtension)' == '.zip'" SourceFiles="$(DownloadedArchive)" DestinationFolder="$(ExtractDirectory)" OverwriteReadOnlyFiles="true" />
+    <Exec Condition="'$(ArchiveExtension)' == '.tar.gz'"
+          WorkingDirectory="$(ExtractDirectory)"
+          Command="tar -xzmf &quot;$([MSBuild]::MakeRelative('$(ExtractDirectory)', '$(DownloadedArchive)'))&quot;" />
+    <WriteLinesToFile File="$(ExtractSemaphore)" Lines="done" Overwrite="true" />
+
+    <!-- delete the archive files when running on CI -->
+    <Message Importance="High" Text="Deleting '$(DownloadedArchive)' to free up space." Condition="'$(TF_BUILD)' != ''"  />
+    <Delete Files="$(DownloadedArchive)"  Condition="'$(TF_BUILD)' != ''" />
+
+  </Target>
+
+  <Target Name="CopyFilesFromArchive" DependsOnTargets="ValidateAndExtractArchives" Inputs="$(ExtractSemaphore)" Outputs="$(CopyToPackageSemaphore)">
+    <Message Importance="High" Text="Copy @(File) -> $(MainPackageFolder)\runtimes\$(TargetRuntimeID)\native\" />
+
+    <!-- Copy to MainPackageFolder to use in libtorch-cpu package build -->
+    <Copy SourceFiles="$(ExtractDirectory)\%(File.Identity)" DestinationFolder="$(MainPackageFolder)\runtimes\$(TargetRuntimeID)\native\" SkipUnchangedFiles="true" Condition="'$(IncludeLibTorchCpuPackages)' == 'true' "/>
+
+    <!-- Copy license to MainPackageFolder to use in libtorch-cpu packages build -->
+    <Copy SourceFiles="$(DownloadedLicenseFile)" DestinationFolder="$(MainPackageFolder)\" SkipUnchangedFiles="true" Condition="'$(IncludeLibTorchCpuPackages)' == 'true'"  />
+
+    <!-- Copy to NativeOutputPath to use in tests (headers, lib etc.) -->
+    <MakeDir Directories="$(NativeOutputPath)"  Condition="'$(SkipTests)' != 'true'"  />
+    <Copy SourceFiles="$(ExtractDirectory)\%(File.Identity)" DestinationFolder="$(NativeOutputPath)" SkipUnchangedFiles="true"   Condition="'$(SkipTests)' != 'true'" />
+
+    <WriteLinesToFile File="$(CopyToPackageSemaphore)" Lines="done" Overwrite="true" />
+  </Target>
+
+  <!-- Define Build to do the work of downloading and copying assets -->
+  <Target Name="Build" DependsOnTargets="CopyFilesFromArchive"  />
+
+  <Target Name="Clean">
+    <RemoveDir Directories="$(IntermediateOutputPath)" />
+  </Target>
+</Project>

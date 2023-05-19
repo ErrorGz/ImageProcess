@@ -1,0 +1,75 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest></ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\CopyMe.MySql.tt.txt" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\DataAnnotations.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\DataModel.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\EditableObject.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\Equatable.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\Humanizer.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\LinqToDB.MySql.Tools.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\LinqToDB.MySql.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\LinqToDB.Tools.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\LinqToDB.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\MultipleFiles.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\NotifyDataErrorInfo.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\NotifyPropertyChanged.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\ObsoleteAttributes.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\PluralizationService.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\T4Model.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\Validation.ttinclude" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="linq2db" Version="5.1.1" />
+    <PackageReference Include="linq2db.MySql" Version="5.1.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="NumSharp" Version="0.30.0" />
+    <PackageReference Include="OpenCvSharp4.Extensions" Version="4.6.0.20220608" />
+    <PackageReference Include="OpenCvSharp4.Windows" Version="4.6.0.20220608" />
+    <PackageReference Include="SharpYaml" Version="2.1.0" />
+    <PackageReference Include="SharpZipLib" Version="1.4.2" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="6.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+    <PackageReference Include="TorchAudio" Version="0.99.6" />
+    <PackageReference Include="TorchSharp" Version="0.99.6" />
+    <PackageReference Include="TorchSharp-cuda-windows" Version="0.99.6" />
+    <PackageReference Include="TorchVision" Version="0.99.6" />
+    <PackageReference Include="YamlDotNet" Version="12.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="CIFAR10\cifar-100-binary.tar.gz">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="DataModels\MyDatabase.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>MyDatabase.generated.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="DataModels\MyDatabase.generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MyDatabase.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="DataSet\" />
+  </ItemGroup>
+
+</Project>

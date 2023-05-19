@@ -1,0 +1,21 @@
+<Project>
+
+  <!-- Core Product Dependencies -->
+  <PropertyGroup>
+    <SystemMemoryVersion>4.5.1</SystemMemoryVersion>
+  </PropertyGroup>
+
+  <!-- Other/Non-Core Product Dependencies -->
+  <PropertyGroup>
+    <LibTorchVersion>1.13.0</LibTorchVersion>
+    <CudaVersionDot>11.7</CudaVersionDot>
+    <CudaVersionNoDot>117</CudaVersionNoDot>
+    <MklDnnVersion>2019.0.5.20190502</MklDnnVersion>
+  </PropertyGroup>
+
+  <!-- Build/infrastructure Dependencies -->
+  <PropertyGroup>
+    <CoverletVersion>2.6.0</CoverletVersion>
+  </PropertyGroup>
+
+</Project>

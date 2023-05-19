@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31129.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yolo5.NetCore", "Yolo5.NetCore\Yolo5.NetCore.csproj", "{D05E9D27-3F13-4FEC-9708-68074467B8BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yolo5.NetCore.Examples", "Yolo5.NetCore.Examples\Yolo5.NetCore.Examples.csproj", "{4952CA56-27B7-4A89-9EC0-A32EA1BC6980}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D05E9D27-3F13-4FEC-9708-68074467B8BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D05E9D27-3F13-4FEC-9708-68074467B8BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D05E9D27-3F13-4FEC-9708-68074467B8BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D05E9D27-3F13-4FEC-9708-68074467B8BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4952CA56-27B7-4A89-9EC0-A32EA1BC6980}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4952CA56-27B7-4A89-9EC0-A32EA1BC6980}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4952CA56-27B7-4A89-9EC0-A32EA1BC6980}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4952CA56-27B7-4A89-9EC0-A32EA1BC6980}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B24A681C-B059-4F71-B619-EA87303972F6}
+	EndGlobalSection
+EndGlobal
