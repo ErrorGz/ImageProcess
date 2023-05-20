@@ -33,9 +33,9 @@ namespace ImageTrain
         public Dictionary<long, ImageData> ValidImage { get; set; } = new Dictionary<long, ImageData>();
         public int _epochs { get; set; } = 200;
         public int _epochs_current { get; set; } = 0;
-        public int _trainBatchSize { get; set; } = 4;
+        public int _trainBatchSize { get; set; } = 15;
 
-        public int _testBatchSize { get; set; } = 4;
+        public int _testBatchSize { get; set; } = 15;
         public int _logInterval { get; set; } = 25;
         public int _numClasses { get; set; } = 0;
         public int _timeout { get; set; } = 3600;    // One hour by default.
@@ -71,10 +71,10 @@ namespace ImageTrain
                     // Check if all properties are not null
                     if (yaml.train == null || yaml.val == null || yaml.nc == 0 || yaml.names == null || yaml.names.Length == 0)
                     {
-                        StaticLib.Log("Error: YAML file is missing required properties.");
+                        //StaticLib.Log("Error: YAML file is missing required properties.");
                         continue;
                     }
-
+                    Console.WriteLine($"加载yaml配置文件：{file}");
                     foreach (var name in yaml.names)
                     {
                         Labels.AddOrGetKey<long, string>(name);
@@ -94,12 +94,12 @@ namespace ImageTrain
             {
                 var ext = Path.GetExtension(file);
                 if (imageext.Contains(ext))
-                {
+                {                    
                     var filename = Path.GetFileNameWithoutExtension(file);
-                    var labelfile = Path.Combine(trainlabelpath, filename + ".txt");
-                    
+                    var labelfile = Path.Combine(trainlabelpath, filename + ".txt");                    
                     if (File.Exists(labelfile))
                     {
+                        Console.WriteLine($"加载label标签文件：{labelfile}");
                         labelfile = new FileInfo(labelfile).FullName;
                         var label = ReadLabelFile(labelfile);
 
@@ -113,11 +113,12 @@ namespace ImageTrain
             {
                 var ext = Path.GetExtension(file);
                 if (imageext.Contains(ext))
-                {
+                {                   
                     var filename = Path.GetFileNameWithoutExtension(file);
                     var labelfile = Path.Combine(validlabelpath, filename + ".txt");
                     if (File.Exists(labelfile))
                     {
+                        Console.WriteLine($"加载label标签文件：{labelfile}");
                         labelfile = new FileInfo(labelfile).FullName;
                         var label = ReadLabelFile(labelfile);
 

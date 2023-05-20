@@ -49,6 +49,7 @@ namespace ImageTrain
 
         private Dictionary<string, Tensor> GetTensorData(ImageData imagedata,int LabelCount)
         {
+            Console.WriteLine($"加载image图像文件：{imagedata.ImageFile}");
             var img = Cv2.ImRead(imagedata.ImageFile, ImreadModes.Color);
 
             // 如果读取失败，尝试使用不同的ImreadModes再次读取

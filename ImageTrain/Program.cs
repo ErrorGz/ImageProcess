@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using TorchSharp;
 using TorchSharp.Modules;
+using static TorchSharp.torch;
 using static TorchSharp.torch.nn;
 using static TorchSharp.torch.nn.functional;
 using static TorchSharp.torch.utils.data;
@@ -14,6 +15,9 @@ namespace ImageTrain
 
             var tensorboard = torch.utils.tensorboard.SummaryWriter();
 
+            Console.WriteLine($"新建记录文件夹：{tensorboard.LogDir}");
+
+
             YAMLdatabase db = new YAMLdatabase(@"DataSet\animals.v2-release.yolov5pytorch");
             db.Save("config.yaml");
             //YAMLdatabase db2 = new YAMLdatabase();
@@ -22,9 +26,12 @@ namespace ImageTrain
 
             var device = torch.cuda.is_available() ? torch.CUDA : torch.CPU;
             var model = ImageTrain.torchvision.models.resnet34(num_classes: db.Labels.Count, device: device);
-            //torch.nn.LSTM()
+
+
+
             if (File.Exists("best.pt"))
             {
+                Console.WriteLine("加载best.pt权重文件");
                 model.load("best.pt");
             }
 
@@ -49,11 +56,11 @@ namespace ImageTrain
 
 
                     StaticLib.Log($"epoch: {epoch}...");
-                    var accuracy_train = TrainOrTest(model, optimizer,  train, tensorboard, epoch, true);
+                    var accuracy_train = TrainOrTest(model, optimizer, train, tensorboard, epoch, true);
 
                     if (epoch % 10 == 0)
                     {
-                        var accuracy_test = TrainOrTest(model, optimizer,  test, tensorboard, epoch, false);
+                        var accuracy_test = TrainOrTest(model, optimizer, test, tensorboard, epoch, false);
                     }
 
                     // Save the model at each epoch
@@ -103,8 +110,8 @@ namespace ImageTrain
             }
 
             long total = 0;
-            double totalLoss = 0.0f;
-            double correct = 0.0f;
+            double total_loss = 0.0f;
+            double total_correct = 0.0f;
             double accuracy = 0.0f;
 
             string mode = isTraining ? "Train" : "Test";
@@ -121,7 +128,7 @@ namespace ImageTrain
                     var prediction = model.call(image);
                     var lsm = log_softmax(prediction, 1);
 
-                    var output = cross_entropy(lsm, target);                   
+                    var output = cross_entropy(lsm, target);
 
                     if (isTraining)
                     {
@@ -129,20 +136,42 @@ namespace ImageTrain
                         optimizer.step();
                     }
                     var batch_count = target.shape[0];
+                    var sample_count = target.shape[1];
+
                     total += batch_count;
-                    var prediction_max_dim_1 = prediction.argmax(1);
-                    var target_max_dim_1 = target.argmax(1);
-                    var pb = prediction_max_dim_1.data<long>().ToList();
-                    var tb = target_max_dim_1.data<long>().ToList();
-                    var pt_list = pb.Zip(tb, (p, t) => (p, t)).Select(o => new string($"[{o.p},{o.t}]"));
-                    var pt_msg = string.Join(",", pt_list);
 
-                    var batch_correct = prediction_max_dim_1.eq(target).sum().ToInt64();
-                    correct += batch_correct;
                     var batch_loss = output.ToSingle();
-                    totalLoss += batch_loss;
+                    total_loss += batch_loss;
 
-                    StaticLib.Log($"[{mode}] batch_data:{pt_msg}\t batch_loss:{batch_loss}/{batch_count}\t batch_correct:{batch_correct}/{batch_count}");
+                    double batch_correct = 0;
+                    List<(int, int)> pt_data = new List<(int, int)>();              
+
+                    for(int b=0;b<batch_count;b++) 
+                    {
+                        var batch_prediction = prediction[b];
+                        var batch_target = target[b];
+                        for (int i = 0; i < sample_count; i++)
+                        {
+                            var sample_prediction = batch_prediction[i];
+                            var sample_target = batch_target[i];
+
+                            (int, int) pt = (0, 0);
+
+                            pt.Item1 = sample_prediction.ToSingle() > 0.5 ? 1 : 0;
+                            pt.Item2 = sample_target.ToSingle() == 1 ? 1 : 0;
+                            pt_data.Add(pt);
+                            if (pt.Item1 == pt.Item2)
+                                batch_correct += 1;
+
+                        }
+                    }
+
+                 
+
+                    total_correct += batch_correct/sample_count;
+                    var pt_msg = string.Join(",", pt_data);
+                    //StaticLib.Log($"[{mode}] batch_data:{pt_msg}");
+                    StaticLib.Log($"batch_loss:{batch_loss}/{batch_count*sample_count}\t batch_correct:{batch_correct}/{batch_count*sample_count}");
 
                     d.DisposeEverything();
                 }
@@ -154,8 +183,8 @@ namespace ImageTrain
                 StaticLib.Log(msg);
                 throw new Exception(msg);
             }
-            accuracy = correct / total;
-            var avgLoss = totalLoss / total;
+            accuracy = total_correct / total;
+            var avgLoss = total_loss / total;
 
             StaticLib.Log($"\r{mode}: Average loss {avgLoss.ToString("0.0000")} | Accuracy {accuracy.ToString("0.0000")}");
             if (isTraining)
