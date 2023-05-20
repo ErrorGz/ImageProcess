@@ -21,7 +21,7 @@ namespace ImageTrain
 
 
             var device = torch.cuda.is_available() ? torch.CUDA : torch.CPU;
-            var model = ImageTrain.torchvision.models.resnet50(num_classes: db.Labels.Count, device: device);
+            var model = ImageTrain.torchvision.models.resnet34(num_classes: db.Labels.Count, device: device);
             //torch.nn.LSTM()
             if (File.Exists("best.pt"))
             {
@@ -137,7 +137,7 @@ namespace ImageTrain
                     var pt_list = pb.Zip(tb, (p, t) => (p, t)).Select(o => new string($"[{o.p},{o.t}]"));
                     var pt_msg = string.Join(",", pt_list);
 
-                    var batch_correct = prediction_max_dim_1.eq(target_max_dim_1).sum().ToInt64();
+                    var batch_correct = prediction_max_dim_1.eq(target).sum().ToInt64();
                     correct += batch_correct;
                     var batch_loss = output.ToSingle();
                     totalLoss += batch_loss;

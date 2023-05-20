@@ -93,25 +93,21 @@ namespace ImageTrain
                 imgDataRGB[i + 2 * img.Rows * img.Cols] = imgData[i * 3]; // B
             });
 
-            // 创建浮点型张量，并将图像数据转换为张量
+            // 创建图像张量
             var imageTensor = torch.tensor(imgDataRGB, new long[] { 3, img.Rows, img.Cols })
                 .to_type(torch.float32)
                 .div(255f);
 
 
-            // 创建张量
-            //var labelTensor = torch.tensor(new float[LabelCount], dtype: ScalarType.Float32);
-            ////将labelTensor设置默认0
-            //labelTensor.zero_();
-
-            var labelTensor=torch.zeros(LabelCount, dtype: float32);
-
-            for (int i = 0; i < imagedata.bbox.Count; i++)
+            // 创建标签张量
+            var labelTensor = torch.zeros(LabelCount, dtype: torch.float32);
+            var labelids = imagedata.bbox.Select(o => o.Item1).ToList();
+            foreach (var labelid in labelids)
             {
-                // 将bbox列表中的元素添加到张量中
-                var (labelID, cx, cy, w, h) = imagedata.bbox[i];
-                labelTensor[labelID] = 1;
+                labelTensor[labelid] = 1;
             }
+
+
             var tensordata = new Dictionary<string, torch.Tensor> { { "data", imageTensor }, { "label", labelTensor } };
             return tensordata;
         }
