@@ -10,18 +10,30 @@ namespace ImageTrain
     {
         Dictionary<long, string> _Labels;
         Dictionary<long, ImageData> _Images;
-       public YOLOv5_Dataset(Dictionary<long, string> Labels, Dictionary<long, ImageData> Images)
+        Dictionary<long, Dictionary<string, Tensor>> _Caches = new Dictionary<long, Dictionary<string, Tensor>>();
+        public YOLOv5_Dataset(Dictionary<long, string> Labels, Dictionary<long, ImageData> Images)
         {
             _Labels = Labels;
             _Images = Images;
-
+            foreach (var imagedata in _Images)
+            {
+                var cache = GetTensorData(imagedata.Value);
+                _Caches.Add(imagedata.Key, cache);
+            }
         }
 
         public void Dispose()
         {
             _Labels.Clear();
             _Images.Clear();
-
+            foreach (var cache in _Caches)
+            {
+                foreach (var t in cache.Value.Values)
+                {
+                    t.Dispose();
+                }
+                cache.Value.Clear();
+            }
 
         }
 
@@ -35,7 +47,11 @@ namespace ImageTrain
 
         public override Dictionary<string, torch.Tensor> GetTensor(long index)
         {
-            var imagedata = _Images[index];
+            return _Caches[index];
+        }
+
+        private Dictionary<string, Tensor> GetTensorData(ImageData imagedata)
+        {
             var img = Cv2.ImRead(imagedata.ImageFile, ImreadModes.Color);
 
             // 如果读取失败，尝试使用不同的ImreadModes再次读取
@@ -56,7 +72,7 @@ namespace ImageTrain
             img = img.Resize(size);
 
             var imgData = new byte[3 * img.Rows * img.Cols];
-        
+
             Parallel.For(0, img.Rows, i =>
             {
                 for (int j = 0; j < img.Cols; j++)
@@ -99,7 +115,6 @@ namespace ImageTrain
             var tensordata = new Dictionary<string, torch.Tensor> { { "data", imageTensor }, { "label", labelTensor } };
             return tensordata;
         }
-
 
 
     }

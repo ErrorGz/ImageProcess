@@ -33,9 +33,9 @@ namespace ImageTrain
         public Dictionary<long, ImageData> ValidImage { get; set; } = new Dictionary<long, ImageData>();
         public int _epochs { get; set; } = 200;
         public int _epochs_current { get; set; } = 0;
-        public int _trainBatchSize { get; set; } = 16;
+        public int _trainBatchSize { get; set; } = 4;
 
-        public int _testBatchSize { get; set; } = 16;
+        public int _testBatchSize { get; set; } = 4;
         public int _logInterval { get; set; } = 25;
         public int _numClasses { get; set; } = 0;
         public int _timeout { get; set; } = 3600;    // One hour by default.
