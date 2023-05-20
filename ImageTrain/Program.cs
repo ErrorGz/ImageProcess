@@ -28,8 +28,8 @@ namespace ImageTrain
                 model.load("best.pt");
             }
 
-            using YOLOv5_Dataset train_data = new YOLOv5_Dataset(db.Labels, db.TrainImage);
-            using YOLOv5_Dataset test_data = new YOLOv5_Dataset(db.Labels, db.ValidImage);
+            using YOLOv5_Dataset train_data = new YOLOv5_Dataset(db.TrainImage, db.Labels.Count);
+            using YOLOv5_Dataset test_data = new YOLOv5_Dataset(db.ValidImage, db.Labels.Count);
             using var train = new DataLoader(train_data, db._trainBatchSize, device: device, num_worker: 4, shuffle: true);
             using var test = new DataLoader(test_data, db._testBatchSize, device: device, num_worker: 4, shuffle: false);
 
@@ -49,11 +49,11 @@ namespace ImageTrain
 
 
                     StaticLib.Log($"epoch: {epoch}...");
-                    var accuracy_train = TrainOrTest(model, optimizer, CrossEntropyLoss(), train, tensorboard, epoch, true);
+                    var accuracy_train = TrainOrTest(model, optimizer,  train, tensorboard, epoch, true);
 
                     if (epoch % 10 == 0)
                     {
-                        var accuracy_test = TrainOrTest(model, optimizer, CrossEntropyLoss(), test, tensorboard, epoch, false);
+                        var accuracy_test = TrainOrTest(model, optimizer,  test, tensorboard, epoch, false);
                     }
 
                     // Save the model at each epoch
@@ -88,7 +88,6 @@ namespace ImageTrain
         private static double TrainOrTest(
             Module<torch.Tensor, torch.Tensor> model,
             torch.optim.Optimizer optimizer,
-            Loss<torch.Tensor, torch.Tensor, torch.Tensor> loss,
             DataLoader dataLoader,
             SummaryWriter tensorboard,
             int epoch,
@@ -121,7 +120,8 @@ namespace ImageTrain
 
                     var prediction = model.call(image);
                     var lsm = log_softmax(prediction, 1);
-                    var output = loss.call(lsm, target);
+
+                    var output = cross_entropy(lsm, target);                   
 
                     if (isTraining)
                     {

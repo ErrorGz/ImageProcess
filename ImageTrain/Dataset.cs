@@ -8,24 +8,20 @@ namespace ImageTrain
 {
     class YOLOv5_Dataset : torch.utils.data.Dataset
     {
-        Dictionary<long, string> _Labels;
-        Dictionary<long, ImageData> _Images;
         Dictionary<long, Dictionary<string, Tensor>> _Caches = new Dictionary<long, Dictionary<string, Tensor>>();
-        public YOLOv5_Dataset(Dictionary<long, string> Labels, Dictionary<long, ImageData> Images)
+        OpenCvSharp.Size ImageSize = new OpenCvSharp.Size(224, 224);
+        public YOLOv5_Dataset( Dictionary<long, ImageData> Images,int LabelCount)
         {
-            _Labels = Labels;
-            _Images = Images;
-            foreach (var imagedata in _Images)
+            foreach (var imagedata in Images)
             {
-                var cache = GetTensorData(imagedata.Value);
+                var cache = GetTensorData(imagedata.Value,LabelCount);
                 _Caches.Add(imagedata.Key, cache);
             }
         }
 
         public void Dispose()
         {
-            _Labels.Clear();
-            _Images.Clear();
+
             foreach (var cache in _Caches)
             {
                 foreach (var t in cache.Value.Values)
@@ -34,6 +30,7 @@ namespace ImageTrain
                 }
                 cache.Value.Clear();
             }
+            _Caches.Clear();
 
         }
 
@@ -41,7 +38,7 @@ namespace ImageTrain
         {
             get
             {
-                return _Images.Count();
+                return _Caches.Count();
             }
         }
 
@@ -50,7 +47,7 @@ namespace ImageTrain
             return _Caches[index];
         }
 
-        private Dictionary<string, Tensor> GetTensorData(ImageData imagedata)
+        private Dictionary<string, Tensor> GetTensorData(ImageData imagedata,int LabelCount)
         {
             var img = Cv2.ImRead(imagedata.ImageFile, ImreadModes.Color);
 
@@ -68,8 +65,8 @@ namespace ImageTrain
                 // 如果所有的ImreadModes都失败了，抛出异常
                 throw new Exception($"Failed to read image file {imagedata.ImageFile}");
             }
-            var size = new OpenCvSharp.Size(416, 416);
-            img = img.Resize(size);
+      
+            img = img.Resize(ImageSize);
 
             var imgData = new byte[3 * img.Rows * img.Cols];
 
@@ -103,9 +100,12 @@ namespace ImageTrain
 
 
             // 创建张量
-            var labelTensor = torch.tensor(new float[_Labels.Count], dtype: ScalarType.Float32);
-            //将labelTensor设置默认0
-            labelTensor.zero_();
+            //var labelTensor = torch.tensor(new float[LabelCount], dtype: ScalarType.Float32);
+            ////将labelTensor设置默认0
+            //labelTensor.zero_();
+
+            var labelTensor=torch.zeros(LabelCount, dtype: float32);
+
             for (int i = 0; i < imagedata.bbox.Count; i++)
             {
                 // 将bbox列表中的元素添加到张量中
