@@ -27,6 +27,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Models\yolov5n.onnx" />
+    <None Remove="Models\yolov5n6.onnx" />
+    <None Remove="Models\yolov5s.onnx" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\README.md" Link="README.md" />
   </ItemGroup>
 
@@ -36,18 +42,6 @@
 		<PackageReference Include="OpenCvSharp4.Extensions" Version="4.6.0.20220608" />
 		<PackageReference Include="OpenCvSharp4.Windows" Version="4.6.0.20220608" />
 		<PackageReference Include="System.Drawing.Common" Version="7.0.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Update="Models\yolov5n.onnx">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Models\yolov5n6.onnx">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Models\yolov5s.onnx">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
 	</ItemGroup>
 
 </Project>

@@ -860,6 +860,23 @@ namespace ImageTrain
                 }
             }
 
+            public  Tensor Features(Tensor input)
+            {
+                using (var scope = NewDisposeScope())
+                {
+
+                    var x = maxpool.call(relu.call(bn1.call(conv1.call(input))));
+
+                    x = layer1.call(x);
+                    x = layer2.call(x);
+                    x = layer3.call(x);
+                    x = layer4.call(x);
+
+                  
+                    scope.MoveToOuter(x);
+                    return x;
+                }
+            }
             public override Tensor forward(Tensor input)
             {
                 using (var scope = NewDisposeScope()) {

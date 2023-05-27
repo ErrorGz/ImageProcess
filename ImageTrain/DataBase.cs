@@ -1,11 +1,18 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Xml.Linq;
+using TorchSharp;
+using TorchSharp.Modules;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
+using static TorchSharp.torch;
+using static TorchSharp.torch.nn;
+using static TorchSharp.torch.utils;
 
 namespace ImageTrain
 {
@@ -19,39 +26,63 @@ namespace ImageTrain
         //public string[] roboflow { get; set; }
     }
 
+    public class VideoData
+    {
+        public string VideoFile { get; set; }
+        public int FrameCount { get; set; }
+        public int FrameStart { get; set; }
+        public int FrameStep { get; set; }
+        public string VideoLabel { get; set; }
+    }
     public class ImageData
     {
         public string ImageFile { get; set; }
         public List<(int, float, float, float, float)> bbox { get; set; }
     }
 
-    public class YAMLdatabase
+    public class YAMLdatabase : IDisposable
     {
         public string YAMLfile { get; set; }
         public Dictionary<long, string> Labels { get; set; } = new Dictionary<long, string>();
         public Dictionary<long, ImageData> TrainImage { get; set; } = new Dictionary<long, ImageData>();
         public Dictionary<long, ImageData> ValidImage { get; set; } = new Dictionary<long, ImageData>();
-        public int _epochs { get; set; } = 200;
-        public int _epochs_current { get; set; } = 0;
-        public int _trainBatchSize { get; set; } = 15;
+        public int? _epochs { get; set; } = 200;
+        public int? _epochs_current { get; set; } = 0;
+        public int? _trainBatchSize { get; set; } = 15;
+        public int? _testBatchSize { get; set; } = 15;
 
-        public int _testBatchSize { get; set; } = 15;
-        public int _logInterval { get; set; } = 25;
-        public int _numClasses { get; set; } = 0;
-        public int _timeout { get; set; } = 3600;    // One hour by default.
+        public int? _numWorker { get; set; } = 4;
+        public int? _logInterval { get; set; } = 25;
+        //public int? _numClasses { get; set; } = 0;
+        public int? _timeout { get; set; } = 3600;    // One hour by default.
 
-        public YAMLdatabase()
+        public string bestModelPath { get; set; }
+        public string lastModelPath { get; set; }
+
+        public string trainpath { get; set; }
+        public string validpath { get; set; }
+        public string trainimagepath { get; set; }
+        public string trainlabelpath { get; set; }
+        public string validimagepath { get; set; }
+        public string validlabelpath { get; set; }
+
+        [YamlIgnore] public Module<Tensor, Tensor> Model { get; set; }
+        [YamlIgnore] public Device device { get; set; } = torch.cuda.is_available() ? torch.CUDA : torch.CPU;
+
+        private YAMLdatabase()
         {
 
         }
         public YAMLdatabase(string rootpath)
         {
-            var trainpath = Path.Combine(rootpath, "train");
-            var validpath = Path.Combine(rootpath, "valid");
-            var trainimagepath = Path.Combine(trainpath, "images");
-            var trainlabelpath = Path.Combine(trainpath, "labels");
-            var validimagepath = Path.Combine(validpath, "images");
-            var validlabelpath = Path.Combine(validpath, "labels");
+            bestModelPath = Path.Combine(rootpath, "best.pt");
+            lastModelPath = Path.Combine(rootpath, "last.pt");
+            trainpath = Path.Combine(rootpath, "train");
+            validpath = Path.Combine(rootpath, "valid");
+            trainimagepath = Path.Combine(trainpath, "images");
+            trainlabelpath = Path.Combine(trainpath, "labels");
+            validimagepath = Path.Combine(validpath, "images");
+            validlabelpath = Path.Combine(validpath, "labels");
 
             string[] imageext = { ".jpg", ".png", ".jpeg", ".bmp" };
             string[] labelext = { ".txt" };
@@ -79,7 +110,7 @@ namespace ImageTrain
                     {
                         Labels.AddOrGetKey<long, string>(name);
                     }
-                    _numClasses = Labels.Count();
+                    //_numClasses = Labels.Count();
                 }
                 catch
                 {
@@ -94,9 +125,9 @@ namespace ImageTrain
             {
                 var ext = Path.GetExtension(file);
                 if (imageext.Contains(ext))
-                {                    
+                {
                     var filename = Path.GetFileNameWithoutExtension(file);
-                    var labelfile = Path.Combine(trainlabelpath, filename + ".txt");                    
+                    var labelfile = Path.Combine(trainlabelpath, filename + ".txt");
                     if (File.Exists(labelfile))
                     {
                         Console.WriteLine($"加载label标签文件：{labelfile}");
@@ -113,7 +144,7 @@ namespace ImageTrain
             {
                 var ext = Path.GetExtension(file);
                 if (imageext.Contains(ext))
-                {                   
+                {
                     var filename = Path.GetFileNameWithoutExtension(file);
                     var labelfile = Path.Combine(validlabelpath, filename + ".txt");
                     if (File.Exists(labelfile))
@@ -127,6 +158,8 @@ namespace ImageTrain
                     }
                 }
             }
+
+
         }
 
         public List<(int, float, float, float, float)> ReadLabelFile(string filePath)
@@ -177,11 +210,11 @@ namespace ImageTrain
             this._trainBatchSize = yaml._trainBatchSize;
             this._testBatchSize = yaml._testBatchSize;
             this._logInterval = yaml._logInterval;
-            this._numClasses = yaml._numClasses;
+            //this._numClasses = yaml._numClasses;
             this._timeout = yaml._timeout;
         }
 
-        public YAMLdatabase LoadYAML(string yamlFile)
+        static public YAMLdatabase LoadYAML(string yamlFile)
         {
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(NullNamingConvention.Instance)
@@ -208,6 +241,115 @@ namespace ImageTrain
                         result.Labels.Add(labelId, labelName);
                     }
                 }
+                {
+                    if (yaml.TryGetValue("_epochs", out var obj))
+                    {
+                        result._epochs = int.Parse(obj as string);
+                    }
+                }
+
+                {
+                    if (yaml.TryGetValue("_epochs_current", out var obj))
+                    {
+                        result._epochs_current = int.Parse(obj as string);
+                    }
+                }
+                {
+                    if (yaml.TryGetValue("_trainBatchSize", out var obj))
+                    {
+                        result._trainBatchSize = int.Parse(obj as string);
+                    }
+                }
+                {
+                    if (yaml.TryGetValue("_testBatchSize", out var obj))
+                    {
+                        result._testBatchSize = int.Parse(obj as string);
+                    }
+                }
+                {
+                    if (yaml.TryGetValue("_numWorker", out var obj))
+                    {
+                        result._numWorker = int.Parse(obj as string);
+                    }
+                }
+                {
+                    if (yaml.TryGetValue("_logInterval", out var obj))
+                    {
+                        result._logInterval = int.Parse(obj as string);
+                    }
+                }
+                //{
+                //    if (yaml.TryGetValue("_numClasses", out var obj))
+                //    {
+                //        result._numClasses =  int.Parse(obj as string);
+                //    }
+
+                //}
+                {
+                    if (yaml.TryGetValue("_timeout", out var obj))
+                    {
+                        result._timeout = int.Parse(obj as string);
+                    }
+
+                }
+                {
+                    if (yaml.TryGetValue("bestModelPath", out var obj))
+                    {
+                        result.bestModelPath = obj as string;
+                    }
+
+                }
+                {
+                    if (yaml.TryGetValue("lastModelPath", out var obj))
+                    {
+                        result.lastModelPath = obj as string;
+                    }
+
+                }
+                {
+                    if (yaml.TryGetValue("trainpath", out var obj))
+                    {
+                        result.trainpath = obj as string;
+                    }
+
+                }
+                {
+                    if (yaml.TryGetValue("validpath", out var obj))
+                    {
+                        result.validpath = obj as string;
+                    }
+
+                }
+                {
+                    if (yaml.TryGetValue("trainimagepath", out var obj))
+                    {
+                        result.trainimagepath = obj as string;
+                    }
+
+                }
+                {
+                    if (yaml.TryGetValue("trainlabelpath", out var obj))
+                    {
+                        result.trainlabelpath = obj as string;
+                    }
+
+                }
+                {
+                    if (yaml.TryGetValue("validimagepath", out var obj))
+                    {
+                        result.validimagepath = obj as string;
+                    }
+
+                }
+                {
+                    if (yaml.TryGetValue("validlabelpath", out var obj))
+                    {
+                        result.validlabelpath = obj as string;
+                    }
+
+                }
+
+
 
                 result.TrainImage = ParseImageYAML("TrainImage", yaml);
                 result.ValidImage = ParseImageYAML("ValidImage", yaml);
@@ -216,9 +358,9 @@ namespace ImageTrain
             }
         }
 
-        private Dictionary<long,ImageData> ParseImageYAML(string ImageType, Dictionary<string, object> yaml)
+        static private Dictionary<long, ImageData> ParseImageYAML(string ImageType, Dictionary<string, object> yaml)
         {
-            Dictionary < long, ImageData> result = new Dictionary<long, ImageData>();
+            Dictionary<long, ImageData> result = new Dictionary<long, ImageData>();
             if (yaml.TryGetValue(ImageType, out var trainImageValue))
             {
                 var ImageDict = trainImageValue as Dictionary<object, object>;
@@ -237,8 +379,8 @@ namespace ImageTrain
                         foreach (var bboxObj in bboxList)
                         {
                             var bboxArray = (bboxObj as Dictionary<object, object>).ToArray();
-                         
-                            var bbox = (                                
+
+                            var bbox = (
                                 int.Parse(bboxArray[0].Value.ToString()),
                                 float.Parse(bboxArray[1].Value.ToString()),
                                 float.Parse(bboxArray[2].Value.ToString()),
@@ -253,8 +395,22 @@ namespace ImageTrain
             }
             return result;
         }
-            
 
+        public Module<Tensor, Tensor> LoadModel()
+        {
+            Model = ImageTrain.torchvision.models.resnet34(num_classes: Labels.Count, device: device);
+            if (File.Exists(bestModelPath))
+            {
+                Model.load(bestModelPath);
+            }
+
+            return Model;
+        }
+        public void Dispose()
+        {
+            if (Model != null)
+                Model.Dispose();
+        }
     }
 
 
