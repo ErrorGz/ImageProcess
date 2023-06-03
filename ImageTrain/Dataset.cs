@@ -11,7 +11,7 @@ namespace ImageTrain
     {
         Dictionary<long, Dictionary<string, Tensor>> _Caches = new Dictionary<long, Dictionary<string, Tensor>>();
 
-        public VideoLabel_Dataset(Dictionary<long, VideoData> Videos, int LabelCount)
+        public VideoLabel_Dataset(Dictionary<long, VideoLabel> Videos, int LabelCount)
         {
             foreach (var videodata in Videos)
             {
@@ -48,7 +48,7 @@ namespace ImageTrain
             return _Caches[index];
         }
 
-        private Dictionary<string, Tensor> GetTensorFromVideoData(VideoData imagedata, int LabelCount)
+        private Dictionary<string, Tensor> GetTensorFromVideoData(VideoLabel imagedata, int LabelCount)
         {
             throw new Exception();
             return null;

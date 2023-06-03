@@ -655,14 +655,14 @@
             // toolStripMenuItemSaveProject
             // 
             toolStripMenuItemSaveProject.Name = "toolStripMenuItemSaveProject";
-            toolStripMenuItemSaveProject.Size = new System.Drawing.Size(180, 22);
+            toolStripMenuItemSaveProject.Size = new System.Drawing.Size(124, 22);
             toolStripMenuItemSaveProject.Text = "保存工程";
             toolStripMenuItemSaveProject.Click += toolStripMenuItemSaveProject_Click;
             // 
             // toolStripMenuItemLoadProject
             // 
             toolStripMenuItemLoadProject.Name = "toolStripMenuItemLoadProject";
-            toolStripMenuItemLoadProject.Size = new System.Drawing.Size(180, 22);
+            toolStripMenuItemLoadProject.Size = new System.Drawing.Size(124, 22);
             toolStripMenuItemLoadProject.Text = "恢复工程";
             toolStripMenuItemLoadProject.Click += toolStripMenuItemLoadProject_Click;
             // 

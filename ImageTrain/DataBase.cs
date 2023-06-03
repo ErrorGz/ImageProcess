@@ -26,18 +26,34 @@ namespace ImageTrain
         //public string[] roboflow { get; set; }
     }
 
+
     public class VideoData
     {
         public string VideoFile { get; set; }
-        public int FrameCount { get; set; }
+        public List<VideoLabel> frames { get; set; } = new List<VideoLabel>();
+    }
+    public class VideoLabel
+    {
+        public int VideoLabelId { get; set; }
         public int FrameStart { get; set; }
-        public int FrameStep { get; set; }
-        public string VideoLabel { get; set; }
+        public int FrameCount { get; set; } = 10;
+        public int FrameStep { get; set; } 
+
     }
     public class ImageData
     {
         public string ImageFile { get; set; }
-        public List<(int, float, float, float, float)> bbox { get; set; }
+        //public List<(int, float, float, float, float)> bbox { get; set; }
+        public List<ImageLabel> bbox { get; set; }
+    }
+
+    public class ImageLabel
+    {
+        public int LabelId { get; set; }
+        public double CentX { get; set; }
+        public double CentY { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
     }
 
     public class YAMLdatabase : IDisposable
@@ -162,9 +178,9 @@ namespace ImageTrain
 
         }
 
-        public List<(int, float, float, float, float)> ReadLabelFile(string filePath)
+        public List<ImageLabel> ReadLabelFile(string filePath)
         {
-            var result = new List<(int, float, float, float, float)>();
+            var result = new List<ImageLabel>();
             using (var reader = new StreamReader(filePath))
             {
                 string line;
@@ -182,7 +198,7 @@ namespace ImageTrain
                     float width = float.Parse(values[3]);
                     float height = float.Parse(values[4]);
 
-                    result.Add((labelId, centerX, centerY, width, height));
+                    result.Add(new ImageLabel() { LabelId = labelId, CentX = centerX, CentY = centerY, Width = width, Height = height });
                 }
             }
 
@@ -371,7 +387,7 @@ namespace ImageTrain
                     var imageData = new ImageData
                     {
                         ImageFile = imageDataDict["ImageFile"].ToString(),
-                        bbox = new List<(int, float, float, float, float)>()
+                        bbox = new List<ImageLabel>()
                     };
                     if (imageDataDict.TryGetValue("bbox", out var bboxValue))
                     {
@@ -380,13 +396,14 @@ namespace ImageTrain
                         {
                             var bboxArray = (bboxObj as Dictionary<object, object>).ToArray();
 
-                            var bbox = (
-                                int.Parse(bboxArray[0].Value.ToString()),
-                                float.Parse(bboxArray[1].Value.ToString()),
-                                float.Parse(bboxArray[2].Value.ToString()),
-                                float.Parse(bboxArray[3].Value.ToString()),
-                                float.Parse(bboxArray[4].Value.ToString())
-                            );
+                            var bbox = new ImageLabel()
+                            {
+                                LabelId = int.Parse(bboxArray[0].Value.ToString()),
+                                CentX = double.Parse(bboxArray[1].Value.ToString()),
+                                CentY = double.Parse(bboxArray[2].Value.ToString()),
+                                Width = double.Parse(bboxArray[3].Value.ToString()),
+                                Height = double.Parse(bboxArray[4].Value.ToString())
+                            };
                             imageData.bbox.Add(bbox);
                         }
                     }
