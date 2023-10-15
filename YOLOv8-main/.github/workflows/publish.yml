@@ -1,0 +1,36 @@
+name: Build, Pack & Publish to Nuget
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.0.x
+
+      - name: Build YoloV8
+        run: dotnet build -c Release Source/YoloV8/YoloV8.csproj
+
+      - name: Build YoloV8.Gpu
+        run: dotnet build -c ReleaseGPU Source/YoloV8/YoloV8.csproj
+
+      - name: Run Tests
+        run: dotnet test Source/YoloV8.Tests/YoloV8.Tests.csproj
+
+      - name: Pack YoloV8
+        run: dotnet pack -c Release -o . Source/YoloV8/YoloV8.csproj
+
+      - name: Pack YoloV8.Gpu
+        run: dotnet pack -c ReleaseGPU -o . Source/YoloV8/YoloV8.csproj
+
+      - name: Publish Nuget Packages
+        run: dotnet nuget push *.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

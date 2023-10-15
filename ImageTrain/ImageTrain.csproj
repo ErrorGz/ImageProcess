@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest></ApplicationManifest>
+    <BaseOutputPath>C:\编译\ImageTrain\bin</BaseOutputPath>
+    <BaseIntermediateOutputPath>C:\编译\ImageTrain\obj\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\CopyMe.MySql.tt.txt" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\DataAnnotations.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\DataModel.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\EditableObject.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\Equatable.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\Humanizer.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\LinqToDB.MySql.Tools.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\LinqToDB.MySql.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\LinqToDB.Tools.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\LinqToDB.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\MultipleFiles.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\NotifyDataErrorInfo.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\NotifyPropertyChanged.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\ObsoleteAttributes.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\PluralizationService.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\T4Model.ttinclude" />
+    <None Remove="C:\Users\ErrorGz\.nuget\packages\linq2db.mysql\5.1.1\contentFiles\any\any\LinqToDB.Templates\Validation.ttinclude" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="OpenCvSharp4.Extensions" Version="4.8.0.20230708" />
+    <PackageReference Include="OpenCvSharp4.Windows" Version="4.8.0.20230708" />
+    <PackageReference Include="SharpZipLib" Version="1.4.2" />
+    <PackageReference Include="TorchAudio" Version="0.100.5" />
+    <PackageReference Include="TorchSharp" Version="0.100.5" />
+    <PackageReference Include="TorchSharp-cuda-windows" Version="0.100.5" />
+    <PackageReference Include="TorchVision" Version="0.100.5" />
+    <PackageReference Include="YamlDotNet" Version="13.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="CIFAR10\cifar-100-binary.tar.gz">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+</Project>

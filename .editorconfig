@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# CS0114: 成员隐藏继承的成员；缺少关键字 override
+dotnet_diagnostic.CS0114.severity = suggestion
